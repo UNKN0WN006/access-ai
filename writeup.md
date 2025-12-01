@@ -31,24 +31,66 @@ Agents for Good
 
 ## Project Description (<1500 words)
 
-AccessAI is a compact, reproducible multi-agent system that automates lightweight accessibility audits for HTML pages and proposes conservative, human-reviewable fixes. The project demonstrates a sequential multi-agent orchestration (Manager → Scanner → Fixer → Patcher), conservative deterministic checks for common accessibility issues (missing alt text, heading structure, unlabeled form controls, and simple contrast heuristics), and an evaluation layer that scores before/after results.
+### Problem Statement -- the problem you're trying to solve, and why you think it's an important or interesting problem to solve
 
-Why this matters: accessibility problems are widespread and often remain unaddressed because manual audits are time-consuming and require specialized knowledge. AccessAI reduces the time-to-insight by combining rule-based scanners with LLM-assisted explanations and fix suggestions, packaged in a portable notebook and a small offline demo.
+Many websites contain accessibility defects (missing alt text, broken heading structure, unlabeled form controls, insufficient contrast) that prevent people with disabilities from using content effectively. Manual audits are slow, require specialist knowledge, and are rarely performed at scale. This project addresses a clear social and technical need: make basic accessibility auditing fast, repeatable, and actionable so teams can find and fix common issues earlier in the content lifecycle.
 
-What it contains:
-- A Manager that orchestrates the audit flow and wires tools.
-- A Scanner that runs deterministic accessibility checks and produces structured issues.
-- A Fixer that produces conservative patch suggestions (HTML snippets or small edits) and an optional verification path.
-- A Patcher that applies safe edits to sample pages for demonstration purposes.
-- A lightweight session/memory mechanism to retain recent audits during a demo run.
-- Tests and an evaluation module that score scans and verify fixes on curated sample pages.
+### Why agents? -- Why are agents the right solution to this problem
 
-How it runs (quick):
-1. Clone the repository and run the offline demo with `python capstone-project/run_demo.py`.
-2. The demo scans sample pages in `capstone-project/data/sample_pages/` and emits patched outputs to `capstone-project/tmp/`.
-3. Open `capstone-project/AccessAI_notebook_executed.ipynb` to step through the notebook demonstration and reproduce the results.
+Agents let us separate responsibilities into specialized components: a Manager orchestrates workflow, a Scanner runs deterministic checks at scale, and a Fixer proposes safe, prioritized repairs. This modular approach is extensible, testable, and allows hybrid operation where deterministic logic ensures reliability while optional LLM-assisted agents provide human-friendly explanations and prioritized recommendations.
 
-Notes on model usage and safety: AccessAI is designed to run without API keys by default — LLM calls are optional and guarded by an API-key check. NEVER commit API keys. Use environment variables for any credentials.
+### What you created -- What's the overall architecture?
+
+AccessAI is a sequential multi-agent system: Manager → Scanner → Fixer → Patcher. Key elements:
+- Manager: wires tools and coordinates agent calls.
+- Scanner: deterministic HTML checks (alt text, headings, labels, simple contrast heuristics) producing structured issues.
+- Fixer: conservative patch suggestions (HTML snippets/diffs) and optional verification via a code-exec tool.
+- Patcher: safely applies demo patches to sample pages.
+- Tools: custom FunctionTools (`fetch_html`, `analyze_html`, `code_exec`) and a guarded adapter for optional LLM calls.
+- Session/Memory: lightweight demo session store for short-term audit state.
+- Observability/Evaluation: logging, unit tests, and a scoring module that quantifies before/after improvements.
+
+Artifacts included in the release: an executed notebook (`capstone-project/AccessAI_notebook_executed.ipynb`), demo runner (`run_demo.py`), local Flask UI (`capstone-project/webapp.py`), unit tests (`capstone-project/tests/`), and sample patched outputs (`capstone-project/tmp/`).
+
+### Demo -- Show your solution
+
+Quick local steps:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r capstone-project/requirements.txt
+python capstone-project/run_demo.py
+```
+
+What you will see:
+- The Manager triggers the Scanner against sample pages in `capstone-project/data/sample_pages/`.
+- The Scanner emits structured issues; the Fixer provides conservative HTML edits.
+- Patched HTML is written to `capstone-project/tmp/` and may be inspected in a browser.
+- Optional LLM explanations run only when an API key is provided; by default the demo runs offline.
+
+Validate with tests:
+
+```bash
+pytest -q capstone-project/tests
+```
+
+### The Build -- How you created it, what tools or technologies you used
+
+- Language & runtime: Python 3.x and Jupyter Notebook.
+- Parsing & tooling: BeautifulSoup (`bs4`), `lxml`, `requests` for fetches, `Flask` for demo UI, and `pytest` for tests.
+- Architecture: simple, modular agent modules under `capstone-project/agents/`, tools-as-dict wiring, and guarded adapters for optional LLM use.
+- Design choices: deterministic rule checks provide repeatability; LLM calls are optional and gated by environment variables to avoid requiring credentials for reviewers.
+
+### If I had more time, this is what I'd do
+
+- Implement a richer InMemorySessionService and a small persistent memory bank for retrieving past audits (claim Sessions & Memory).
+- Add a guarded LLM sub-agent (Gemini-compatible adapter) and a fallback mock to claim the Gemini bonus while preserving offline runs.
+- Add parallel scanning (parallel agents) and a resumable long-running job for large-site crawls.
+- Improve observability with structured logs and simple metrics (issue counts, fix rates) plus a basic dashboard.
+- Provide a Cloud Run / Agent Engine deployment recipe and a 2–3 minute demo video with a thumbnail for the Kaggle card.
+
+Notes: the project description above fits under 1500 words and is designed to be concise for the Kaggle writeup.
 
 ---
 
@@ -57,23 +99,6 @@ Notes on model usage and safety: AccessAI is designed to run without API keys by
 - GitHub Repository: https://github.com/UNKN0WN006/fraudshield-workforce (release: `release/capstone-v1`, tag `v1.0.0`)
 - Kaggle Notebook (executed): `capstone-project/AccessAI_notebook_executed.ipynb` (also uploaded to the release assets)
 - Submission ZIP: `capstone-project-v1.0.0.zip` (uploaded to release `v1.0.0`)
-
----
-
-## How the project maps to the evaluation criteria
-
-**Category 1 — The Pitch (30 points)**
-- Core Concept & Value (15 pts): AccessAI addresses a clear social need: making web content more accessible. The multi-agent approach is central — the Manager coordinates specialized agents so that rule-based checks scale and LLMs (optionally) provide human-friendly explanations.
-- Writeup (15 pts): this document articulates the problem, architecture, demo steps, and submission artifacts.
-
-**Category 2 — The Implementation (70 points)**
-- Technical Implementation (50 pts): the repository demonstrates at least three course concepts: a Multi-agent system (sequential Manager → Scanner → Fixer), Tools (custom `fetch_html` and `analyze_html` tools and a `code_exec` verification tool), and Agent Evaluation (scoring and unit tests in `capstone-project/tests/`). The code is documented with comments describing design and behavior. A local Flask demo (`capstone-project/webapp.py`) shows a runnable deployment path.
-- Documentation (20 pts): the repo contains `README.md`, `REVIEWER_NOTE.md`, and this writeup. The notebook includes inline Markdown explanation for Kaggle reviewers.
-
-**Bonus (up to 20 pts)**
-- Effective Use of Gemini (5 pts): The project documents optional Gemini usage and includes a guarded adapter to call a Gemini-compatible model when an API key is provided. The demo runs without keys.
-- Agent Deployment (5 pts): A local Flask demo and `run_demo.py` demonstrate deployment; additional Cloud Run instructions are included in the repo for reproducibility.
-- YouTube Video (10 pts): include a short demo video (<3 minutes) in the Media Gallery.
 
 ---
 
@@ -111,5 +136,3 @@ pytest -q capstone-project/tests
 Do not include API keys or secrets in the repository. When using an LLM, set credentials via environment variables and use the provided guarded adapter to enable/disable model calls.
 
 ---
-
-If you want, I can also produce a short 2–3 minute video script and a thumbnail image now. Let me know which extras to add before you submit.
