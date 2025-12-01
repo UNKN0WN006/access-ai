@@ -6,7 +6,9 @@
 \usepackage{microtype}
 \usepackage{hyperref}
 \usepackage{parskip}
-\title{AccessAI: Automated Accessibility Auditor}
+\usepackage{geometry}
+\geometry{margin=0.6in}
+	itle{AccessAI: An Agent-Driven Accessibility Auditor}
 \author{Student Project}
 \date{}
 
@@ -14,32 +16,54 @@
 \maketitle
 
 \begin{abstract}
-AccessAI is a compact multi-agent system that scans HTML pages for common accessibility issues and proposes conservative, explainable fixes. The implementation emphasizes reproducibility and low friction: it runs without cloud API keys and uses deterministic heuristics so reviewers can inspect and verify every change.
+AccessAI is a compact, reproducible system that demonstrates how a set of small agents can detect simple but high-impact accessibility issues in HTML pages and propose conservative, explainable fixes. The implementation prioritizes transparency and reproducibility: it runs locally without cloud API keys, uses deterministic heuristics, and verifies suggested edits with a re-scan.
 \end{abstract}
 
 \section{Introduction}
-Accessibility gaps (missing image descriptions, unlabeled controls, unclear heading order) are frequent and affect many users. AccessAI focuses on straightforward problems that yield large, immediate usability improvements when fixed. The system demonstrates an agent-driven, testable workflow: detect, propose, patch, and verify.
+Accessibility gaps in web pages — missing image descriptions, unlabeled form fields, poorly structured headings, and low visual contrast — remain common and have a measurable impact on users. The intention behind AccessAI is modest: to provide a lightweight, explainable toolchain that finds straightforward issues and demonstrates how small automated suggestions can be validated automatically. Rather than replacing manual audits, AccessAI aims to help developers catch low-effort fixes early and provide a clear audit trail for each automated change.
 
-\section{System Overview}
-AccessAI is organized into small agents. The \textbf{Scanner} parses HTML and reports issues: missing `alt` attributes, heading-structure problems, unlabeled inputs, absent ARIA attributes, and low-contrast color pairs. The \textbf{Fixer} emits conservative suggestions (short patch-like edits such as adding an `aria-label` or an `alt` placeholder). The \textbf{Patcher} applies minimal edits; the \textbf{Manager} orchestrates the end-to-end flow and re-runs the Scanner to measure improvements.
+This writeup describes the design and implementation choices made for AccessAI, presents how the agents work together in a verify-and-report loop, and outlines evaluation practices that keep the demonstration reproducible for reviewers.
 
-\section{Implementation}
-The code is implemented in Python with BeautifulSoup for parsing. The choice of deterministic heuristics keeps the behavior transparent and reproducible. Contrast checks use a simplified relative-luminance ratio; while not a full WCAG engine, it is adequate for demonstration. Tools for fetching HTML and executing short verification snippets are local wrappers so the demo remains offline-capable.
+\section{Design and Agents}
+AccessAI is organized around four primary agents. The \textbf{Scanner} reads the HTML DOM and uses deterministic heuristics to list problems. These heuristics include checks for missing `alt` attributes on images, absence of labels for inputs, heading structure irregularities (e.g., missing top-level headings), common ARIA omissions, and a basic contrast ratio check for foreground/background colors. The Scanner's output is a categorized list of issues with element pointers and a short explanation for each finding.
 
-\section{Evaluation}
-Each sample page is scanned to produce baseline counts across issue categories. The Fixer applies a set of small patches to a copy of the HTML and the Scanner runs again to compute post-patch counts. The reduction in issue counts per category is reported, producing an immediately verifiable outcome. Unit tests validate specific fixes and fuzz tests guard against malformed input.
+The \textbf{Fixer} is intentionally conservative: it translates Scanner findings into small, testable change proposals. Examples include inserting an empty descriptive `alt=""` when image context is unclear, adding a top-level `<h1>` if none exists, or attaching an `aria-label` attribute derived from nearby text when a clear label is missing. Each proposal includes an explanation and a conservative confidence estimate.
 
-\section{Results and Discussion}
-On the sample pages included with the project, AccessAI frequently finds missing `alt` attributes and unlabeled form controls. Small, attribute-based patches reduce these counts reliably. The approach is intentionally conservative to avoid layout regressions; the system reports the exact edits so reviewers can accept or revert them easily.
+The \textbf{Patcher} accepts a proposed change and applies a minimal edit to the HTML copy. Edits are localized: attributes are added rather than reformatting or restructuring large portions of markup. This keeps diffs small and easy to review.
+
+Finally the \textbf{Manager} orchestrates the flow. It runs the Scanner to collect baseline issues, asks the Fixer for suggestions, applies patches using the Patcher on a copy, and re-runs the Scanner. The before/after counts are reported so reviewers can verify that suggestions reduced issue counts.
+
+\section{Implementation Details}
+The demo is implemented in Python and uses BeautifulSoup's `html.parser` for portability. Deterministic heuristics were preferred over opaque ML models to keep behavior traceable. Contrast checks use relative luminance and a simplified contrast threshold; this is adequate for demonstration but not a drop-in replacement for a full WCAG engine.
+
+Practical choices were driven by reproducibility: the project includes a local `fetch_html` helper to load pages and a `code_execution` wrapper for small verification tasks. ADK/Gemini integration points remain in the codebase but are guarded so the default flow works entirely offline.
+
+The test suite contains focused unit tests for Scanner heuristics and Fixer templates, sequential tests that apply patches until no further fixes are suggested, and fuzz-style tests to ensure robustness on malformed HTML inputs.
+
+\section{Evaluation Methodology}
+Evaluation in this project is deliberately simple, because the goal is reproducibility. For each sample page the Scanner emits a baseline count across categories: `alt_missing`, `label_missing`, `heading_structure`, `aria_missing`, and `contrast_low`. The Fixer applies its conservative patches on a copy and the Scanner re-runs to compute post-patch counts. Reductions in counts by category are reported alongside a short diff of the actual edits. This produces clear, verifiable evidence that a suggested patch reduced a measurable issue.
+
+Automated tests exercise the full loop: scan → suggest → patch → re-scan. Fuzz tests feed malformed or truncated HTML to ensure the scanner and patcher degrade gracefully rather than crashing.
+
+\section{Results and Observations}
+Across the included sample pages, AccessAI most commonly flags missing `alt` attributes and unlabeled inputs. Applying small attribute-level patches reduces the counts for those categories in the majority of cases. The conservative design ensures that patches rarely change layout or remove content.
+
+The usefulness of the system is not in making perfect automated repairs, but in surfacing low-effort, high-impact issues and providing a transparent audit trail. When human reviewers inspect the suggested edits, they can accept, modify, or reject them easily because diffs are small and each fix includes an explanation.
 
 \section{Limitations and Future Work}
-Heuristics are simple and will not catch every accessibility problem. Useful next steps include CSS-aware contrast analysis, better ARIA-role verification, and optional natural-language alt text suggestions that would be reviewed by a human.
+There are clear limitations. Heuristics will miss nuanced accessibility problems, and the contrast checks here are simplified. Future work would include CSS-aware contrast computations, more sophisticated ARIA and role validation, and optional natural language alt-text suggestions that would be presented to a human reviewer for acceptance. Another promising direction is integrating a lightweight review UI that shows before/after diffs and lets a reviewer accept multiple fixes in one session.
 
-\section{How to Run}
-Create a virtual environment, install dependencies from `capstone-project/requirements.txt`, and run `python -m capstone-project.run_accessai` to scan sample pages and preview suggested fixes. Run the test suite with `pytest capstone-project/tests`.
+\section{How to run and reproduce}
+Create a virtual environment, install dependencies from `capstone-project/requirements.txt`, and run the demo with
+
+\begin{verbatim}
+python -m capstone-project.run_accessai
+\end{verbatim}
+
+Run tests with `pytest capstone-project/tests` to verify scanner/fixer/patcher behavior.
 
 \section{Conclusion}
-AccessAI demonstrates a practical, explainable approach to small-scale accessibility auditing and repair. It is designed for reproducibility and reviewability: no cloud services are required and every suggestion is accompanied by a clear explanation and a verification step.
+AccessAI is a focused demonstration showing how small, explainable agents can help surface and reduce simple accessibility issues. The system emphasizes reproducibility and conservative automation: it keeps edits minimal, provides clear explanations, and verifies each change. For reviewers and judges, this means results are easy to reproduce and understand.
 
 \vfill
 \end{document}

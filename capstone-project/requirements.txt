@@ -4,3 +4,6 @@ requests
 beautifulsoup4
 lxml
 pytest
+
+# Optional for interactive notebook previews (Kaggle may not need this)
+ipywidgets
