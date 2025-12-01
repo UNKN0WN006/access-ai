@@ -1,4 +1,4 @@
-# fraudshield-workforce — AccessAI
+# AccessAI — Multi-Agent Accessibility Auditor
 
 AccessAI is a project that demonstrates a small multi-agent system which inspects HTML pages, highlights common accessibility issues (missing alt text, unlabeled form fields, problematic heading structure, etc.), and proposes conservative, explainable fixes.
 

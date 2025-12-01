@@ -25,7 +25,7 @@ Agents for Good
 
 ## Media Gallery (Optional)
 
-- YouTube demo (optional): <ADD_YOUTUBE_URL_HERE>
+- YouTube demo (optional): 
 
 ---
 
@@ -96,7 +96,7 @@ Notes: the project description above fits under 1500 words and is designed to be
 
 ## Attachments (what I'm submitting)
 
-- GitHub Repository: https://github.com/UNKN0WN006/fraudshield-workforce (release: `release/capstone-v1`, tag `v1.0.0`)
+- GitHub Repository: https://github.com/UNKN0WN006/AccessAI (release: `release/capstone-v1`, tag `v1.0.0`)
 - Kaggle Notebook (executed): `capstone-project/AccessAI_notebook_executed.ipynb` (also uploaded to the release assets)
 - Submission ZIP: `capstone-project-v1.0.0.zip` (uploaded to release `v1.0.0`)
 
