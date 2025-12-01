@@ -11,27 +11,33 @@ from agents.patcher import apply_patch_to_html
 
 
 def load_sample(name: str) -> str:
-    return (Path(__file__).parent.parent / 'data' / 'sample_pages' / name).read_text(encoding='utf-8')
+    return (Path(__file__).parent.parent / "data" / "sample_pages" / name).read_text(
+        encoding="utf-8"
+    )
 
 
 def test_sequential_patches_until_fixed():
-    html = load_sample('medium.html')
+    html = load_sample("medium.html")
     cur = html
-    before = scanner_mod.analyze_html(cur, '')
-    assert len(before.get('issues', [])) > 0
+    before = scanner_mod.analyze_html(cur, "")
+    assert len(before.get("issues", [])) > 0
 
     max_iters = 10
     for i in range(max_iters):
-        scan = scanner_mod.analyze_html(cur, '')
-        if not scan.get('issues'):
+        scan = scanner_mod.analyze_html(cur, "")
+        if not scan.get("issues"):
             break
         # get suggestions from fixer for the current html
-        suggestions = fixer_mod.suggest_fixes(scan, cur, tools={'scanner': scanner_mod.analyze_html})
-        assert suggestions, 'No suggestions produced during sequential patching'
+        suggestions = fixer_mod.suggest_fixes(
+            scan, cur, tools={"scanner": scanner_mod.analyze_html}
+        )
+        assert suggestions, "No suggestions produced during sequential patching"
         # apply the first suggestion's patch
         s = suggestions[0]
-        cur = apply_patch_to_html(cur, s.get('issue', {}), s.get('patch', ''))
+        cur = apply_patch_to_html(cur, s.get("issue", {}), s.get("patch", ""))
 
-    final = scanner_mod.analyze_html(cur, '')
+    final = scanner_mod.analyze_html(cur, "")
     # Expect no remaining issues for the medium sample with our heuristics
-    assert not any(True for _ in final.get('issues', [])), f'Remaining issues: {final.get("issues")} '
+    assert not any(
+        True for _ in final.get("issues", [])
+    ), f'Remaining issues: {final.get("issues")} '

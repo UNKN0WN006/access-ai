@@ -56,6 +56,22 @@ Preservation and archives
 
 The capstone itself lives in `capstone-project/` and has been preserved. I also moved old notes into a recovery branch named `archive/before-cleanup-2025-12-01` (you can find `archive/kaggle` and `archive/personal` there). I left all the important files in place so nothing gets accidentally removed.'
 
+Kaggle submission
+
+ - **Executed notebook:** `capstone-project/AccessAI_notebook_executed.ipynb` is included and ready for upload to Kaggle. It contains the run used to generate the demo artifacts in `capstone-project/tmp/`.
+ - **What to include on Kaggle:** the executed notebook above, the `capstone-project/data/` folder (sample pages), and `capstone-project/agents/` (the code). You can also include `capstone-project/tmp/` if you want the pre-generated patched HTML files to be visible to reviewers.
+ - **Run notes (local / Kaggle):** Kaggle kernels vary in Python version; use a Python 3.10+ kernel. If you need a reproducible run on Kaggle, upload the executed notebook and the `capstone-project/` folder. In a live kernel, run the top cells to install any missing dependencies and then run the notebook cells in order.
+ - **Repro command (local):**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r capstone-project/requirements.txt
+python -m capstone-project.run_accessai
+```
+
+ - **Authorship & credits:** See `AUTHORS.md` and `ACKNOWLEDGMENTS.md` in the repo. The project is offline-first and contains clear, conservative fixes so reviewers can inspect diffs easily.
+
 License
 
 See `LICENSE` at the repository root.
