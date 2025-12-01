@@ -1,0 +1,45 @@
+% AccessAI writeup — two-column LaTeX
+\documentclass[10pt,twocolumn]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{times}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{parskip}
+\title{AccessAI: Automated Accessibility Auditor}
+\author{Student Project}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+AccessAI is a compact multi-agent system that scans HTML pages for common accessibility issues and proposes conservative, explainable fixes. The implementation emphasizes reproducibility and low friction: it runs without cloud API keys and uses deterministic heuristics so reviewers can inspect and verify every change.
+\end{abstract}
+
+\section{Introduction}
+Accessibility gaps (missing image descriptions, unlabeled controls, unclear heading order) are frequent and affect many users. AccessAI focuses on straightforward problems that yield large, immediate usability improvements when fixed. The system demonstrates an agent-driven, testable workflow: detect, propose, patch, and verify.
+
+\section{System Overview}
+AccessAI is organized into small agents. The \textbf{Scanner} parses HTML and reports issues: missing `alt` attributes, heading-structure problems, unlabeled inputs, absent ARIA attributes, and low-contrast color pairs. The \textbf{Fixer} emits conservative suggestions (short patch-like edits such as adding an `aria-label` or an `alt` placeholder). The \textbf{Patcher} applies minimal edits; the \textbf{Manager} orchestrates the end-to-end flow and re-runs the Scanner to measure improvements.
+
+\section{Implementation}
+The code is implemented in Python with BeautifulSoup for parsing. The choice of deterministic heuristics keeps the behavior transparent and reproducible. Contrast checks use a simplified relative-luminance ratio; while not a full WCAG engine, it is adequate for demonstration. Tools for fetching HTML and executing short verification snippets are local wrappers so the demo remains offline-capable.
+
+\section{Evaluation}
+Each sample page is scanned to produce baseline counts across issue categories. The Fixer applies a set of small patches to a copy of the HTML and the Scanner runs again to compute post-patch counts. The reduction in issue counts per category is reported, producing an immediately verifiable outcome. Unit tests validate specific fixes and fuzz tests guard against malformed input.
+
+\section{Results and Discussion}
+On the sample pages included with the project, AccessAI frequently finds missing `alt` attributes and unlabeled form controls. Small, attribute-based patches reduce these counts reliably. The approach is intentionally conservative to avoid layout regressions; the system reports the exact edits so reviewers can accept or revert them easily.
+
+\section{Limitations and Future Work}
+Heuristics are simple and will not catch every accessibility problem. Useful next steps include CSS-aware contrast analysis, better ARIA-role verification, and optional natural-language alt text suggestions that would be reviewed by a human.
+
+\section{How to Run}
+Create a virtual environment, install dependencies from `capstone-project/requirements.txt`, and run `python -m capstone-project.run_accessai` to scan sample pages and preview suggested fixes. Run the test suite with `pytest capstone-project/tests`.
+
+\section{Conclusion}
+AccessAI demonstrates a practical, explainable approach to small-scale accessibility auditing and repair. It is designed for reproducibility and reviewability: no cloud services are required and every suggestion is accompanied by a clear explanation and a verification step.
+
+\vfill
+\end{document}
