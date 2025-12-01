@@ -86,8 +86,5 @@ python -m pytest capstone-project/tests -q
 
 ## Limitations and future work
 
-Because the system uses heuristics it will miss nuanced accessibility problems. Future directions include integrating CSS-aware contrast checks, adding human-in-the-loop alt text suggestions, and expanding ARIA validation.
+Because the system uses heuristics it will miss nuanced accessibility problems. Future directions include integrating CSS-aware contrast checks, and expanding ARIA validation.
 
-## Final notes
-
-This writeup and the notebook aim to be easy to run and inspect. If you want a formatted two-column LaTeX version for printing or slides, see `writeup.tex` in this folder.
