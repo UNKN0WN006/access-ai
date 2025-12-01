@@ -1,100 +1,115 @@
-Project name: AccessAI — Multi-Agent Accessibility Auditor (Track: Agents for Good)
-Why it stands out:
-Social impact (accessibility) — fits "Agents for Good".
-Uses multi-agent patterns you learned: manager + specialist agents (parallel/ sequential).
-Demonstrates at least 3 required ADK features: multi-agent, custom tools (HTML fetch + rule-check), Sessions & Memory (store audits), Observability (logging) and Evaluation (testcases). That covers scoring for Implementation and Bonus (you can use Gemini for one agent for +5 bonus).
-Fast to build: you can demo with 3 sample pages and LLM-powered explanations + deterministic rule checks.
-Project scope (minimum viable for 1 day)
-Core features (MVP):
-Manager agent (LLM) orchestrates audit requests.
-Crawler/Fetcher tool: fetches HTML (FunctionTool).
-Scanner agent: runs deterministic checks (alt attributes, heading order, color contrast heuristics) and calls LLM for explanations and prioritized fixes.
-Fixer agent: suggests code snippets / diff-style fixes for top issues.
-Session + Memory: store recent audits and retrieve past audits for the same site (demo reuse).
-Observability: simple logging of each step (what tool called, observations).
-Evaluation: include 3 sample pages and 4-6 unit tests that assert the scanner finds expected issues.
-Bonus (time-permitting):
-Use gemini-* model name in one sub-agent (documented but you can run on Kaggle if you have API key) to claim the Gemini bonus.
-Short deployment docs or a Cloud Run instruction for bonus deploy points.
-2.5–3 minute demo video.
-One-day schedule (8–10 hours, tight but doable)
-00:00–00:30 (30m) — Finalise idea, repo/notebook creation, collect sample pages.
-00:30–01:45 (75m) — Implement repo skeleton + agent scaffolding (Manager + Scanner + Fixer) using ADK LlmAgent and FunctionTool placeholders.
-01:45–03:15 (90m) — Implement HTML fetch tool + deterministic scanner rules (alt text, heading order, form labels, link text, simple color contrast using luminance approximations).
-03:15–04:15 (60m) — Integrate LLM explanations + Fixer agent that returns suggested HTML snippets.
-04:15–05:00 (45m) — Add Sessions & InMemoryMemory to store audit summaries; demo retrieval.
-05:00–05:45 (45m) — Add logging and simple evaluation tests (assert expected issues found). Run tests and refine.
-05:45–06:30 (45m) — Write README and Kaggle writeup draft (<=1500 words), architecture diagram (ASCII or quick PNG).
-06:30–07:00 (30m) — Record video (scripted, 2–3 takes), upload, create thumbnail.
-07:00–07:30 (30m) — Final polish, create submission attachments, verify no API keys, submit.
-Concrete technical plan & ADK features mapping
-Multi-agent: Manager (LLM) + Scanner (specialist rule-runner) + Fixer (LLM-assisted code suggester). Use SequentialAgent or a simple custom orchestration pattern.
-Tools:
-Built-in: google_search (optional for research)
-Custom FunctionTool: fetch_html(url) — returns HTML string (use requests).
-Custom FunctionTool: analyze_html(html) — runs deterministic checks.
-Code execution tool for running small scripts (if needed).
-Sessions & Memory:
-InMemorySessionService to show per-run state.
-InMemoryMemoryService for storing top-level audit summaries (per domain).
-Observability:
-Python logging capturing manager/tool events, write to logs/agent.log.
-Evaluation:
-*.test.json style or simple pytest file with test pages in data/.
-Deployment (optional):
-Provide Dockerfile or requirements.txt and simple instructions to run on Cloud Run or Kaggle Notebooks.
-Minimal ADK agent skeleton (pseudo-ready snippet)
-Use in your Kaggle notebook or repo. Replace secrets with environment variables (do NOT commit keys).
-Python skeleton (short):
+---
+# Title
 
-Manager agent coordinates:
-Accepts a URL
-Calls fetch_html tool
-Calls ScannerAgent (synchronously via runner) to get issues and a summary
-Calls FixerAgent for suggested code fixes for top N issues
-Stores results in MemoryService and returns a report
-Example (conceptual):
+AccessAI — Multi-Agent Accessibility Auditor
 
-Manager: LlmAgent(name="access_manager", instruction="You orchestrate accessibility audits...")
-fetch_html: FunctionTool that returns HTML
-scanner_agent: LlmAgent or pure function tool that returns structured list of issues
-fixer_agent: LlmAgent that generates code fixes
-I can create a ready-to-run notebook cell with this skeleton if you want.
+---
 
-README / Kaggle writeup template (outline)
-Title: AccessAI — Multi-Agent Accessibility Auditor
-Subtitle: Fast audits, human-readable fixes, and persistent memory for repeat scans.
-Problem: Accessibility is often ignored; manual audits are slow and inconsistent.
-Solution: Multi-agent system that (1) fetches a page, (2) runs deterministic and LLM-assisted checks, (3) proposes code fixes and stores audits in memory.
-Architecture: concise diagram and bullets (Manager, Fetcher, Scanner, Fixer, Memory, Tools).
-How to run: (Kaggle notebook instructions + local requirements)
-Files & Demo:
-notebook.ipynb — interactive demo
-agents/agent.py — agent definitions
-data/sample_pages/ — sample HTML files
-README.md — this doc
-Scoring pick-ups:
-Multi-agent + Tools + Sessions & Memory + Observability + Evaluation.
-Video link & short bullet demo steps.
-Short video script (60–180s)
-0:00–0:10s — Title + one-sentence problem (why accessibility matters).
-0:10–0:35s — Architecture (visual) and quick mention of ADK features.
-0:35–1:30s — Live demo: run audit for example URL (show issues found and fix suggestions).
-1:30–1:50s — Show memory retrieval of previous audit and logging/tracing.
-1:50–2:00s — Impact statement + call to action / GitHub link.
-Evaluation & scoring checklist (for judges)
-Category 1 (Pitch): Clear problem + value statement + short metrics (time saved, number of issues found).
-Category 2 (Implementation): Show code quality, multi-agent usage, tools, sessions/memory, and tests.
-Bonus: Use Gemini (documented; run if possible), short video (<3min), and deployment docs for Cloud Run or Agent Engine.
-Safety & submission notes
-NEVER commit API keys. Use environment variables or Kaggle secrets.
-Keep the Kaggle Notebook self-contained (sample pages + code) so judges can run it without cloud creds.
-For Gemini bonus: document model usage and where to set API key. If you can include a short fallback mode (dummy LLM outputs) to let graders run the notebook without keys, it’s better.
-Offer — next steps I can do immediately
-I can:
-Generate the repo/notebook scaffold (files: notebook.ipynb or kaggle/dayX/AccessAI.ipynb, agents/agent.py, data/sample_pages/, README.md, requirements.txt) for you right now.
-Or produce the minimal Python code skeleton for the agents and a runnable Kaggle notebook JSON structure (per your notebook-format instructions).
-Tell me which you want me to do next:
-A) Create the scaffold repository + notebook (I will produce files and test-run quick unit tests), or
-B) Produce the concise runnable Kaggle notebook JSON with code cells and markdown (so you can open & run it in Kaggle quickly), or
-C) Just get you a compact implementation snippet + README + video script and you’ll proceed yourself.
+## Subtitle
+
+Fast audits, human-readable fixes, and persistent memory for repeat scans.
+
+---
+
+## Card / Thumbnail Image
+
+Add a thumbnail image to the Kaggle submission card that visually identifies the project (e.g. `assets/demo_thumbnail.png`). Include the image in the repository and select it when creating the Kaggle card.
+
+---
+
+## Submission Track
+
+Agents for Good
+
+---
+
+## Media Gallery (Optional)
+
+- YouTube demo (optional): <ADD_YOUTUBE_URL_HERE>
+
+---
+
+## Project Description (<1500 words)
+
+AccessAI is a compact, reproducible multi-agent system that automates lightweight accessibility audits for HTML pages and proposes conservative, human-reviewable fixes. The project demonstrates a sequential multi-agent orchestration (Manager → Scanner → Fixer → Patcher), conservative deterministic checks for common accessibility issues (missing alt text, heading structure, unlabeled form controls, and simple contrast heuristics), and an evaluation layer that scores before/after results.
+
+Why this matters: accessibility problems are widespread and often remain unaddressed because manual audits are time-consuming and require specialized knowledge. AccessAI reduces the time-to-insight by combining rule-based scanners with LLM-assisted explanations and fix suggestions, packaged in a portable notebook and a small offline demo.
+
+What it contains:
+- A Manager that orchestrates the audit flow and wires tools.
+- A Scanner that runs deterministic accessibility checks and produces structured issues.
+- A Fixer that produces conservative patch suggestions (HTML snippets or small edits) and an optional verification path.
+- A Patcher that applies safe edits to sample pages for demonstration purposes.
+- A lightweight session/memory mechanism to retain recent audits during a demo run.
+- Tests and an evaluation module that score scans and verify fixes on curated sample pages.
+
+How it runs (quick):
+1. Clone the repository and run the offline demo with `python capstone-project/run_demo.py`.
+2. The demo scans sample pages in `capstone-project/data/sample_pages/` and emits patched outputs to `capstone-project/tmp/`.
+3. Open `capstone-project/AccessAI_notebook_executed.ipynb` to step through the notebook demonstration and reproduce the results.
+
+Notes on model usage and safety: AccessAI is designed to run without API keys by default — LLM calls are optional and guarded by an API-key check. NEVER commit API keys. Use environment variables for any credentials.
+
+---
+
+## Attachments (what I'm submitting)
+
+- GitHub Repository: https://github.com/UNKN0WN006/fraudshield-workforce (release: `release/capstone-v1`, tag `v1.0.0`)
+- Kaggle Notebook (executed): `capstone-project/AccessAI_notebook_executed.ipynb` (also uploaded to the release assets)
+- Submission ZIP: `capstone-project-v1.0.0.zip` (uploaded to release `v1.0.0`)
+
+---
+
+## How the project maps to the evaluation criteria
+
+**Category 1 — The Pitch (30 points)**
+- Core Concept & Value (15 pts): AccessAI addresses a clear social need: making web content more accessible. The multi-agent approach is central — the Manager coordinates specialized agents so that rule-based checks scale and LLMs (optionally) provide human-friendly explanations.
+- Writeup (15 pts): this document articulates the problem, architecture, demo steps, and submission artifacts.
+
+**Category 2 — The Implementation (70 points)**
+- Technical Implementation (50 pts): the repository demonstrates at least three course concepts: a Multi-agent system (sequential Manager → Scanner → Fixer), Tools (custom `fetch_html` and `analyze_html` tools and a `code_exec` verification tool), and Agent Evaluation (scoring and unit tests in `capstone-project/tests/`). The code is documented with comments describing design and behavior. A local Flask demo (`capstone-project/webapp.py`) shows a runnable deployment path.
+- Documentation (20 pts): the repo contains `README.md`, `REVIEWER_NOTE.md`, and this writeup. The notebook includes inline Markdown explanation for Kaggle reviewers.
+
+**Bonus (up to 20 pts)**
+- Effective Use of Gemini (5 pts): The project documents optional Gemini usage and includes a guarded adapter to call a Gemini-compatible model when an API key is provided. The demo runs without keys.
+- Agent Deployment (5 pts): A local Flask demo and `run_demo.py` demonstrate deployment; additional Cloud Run instructions are included in the repo for reproducibility.
+- YouTube Video (10 pts): include a short demo video (<3 minutes) in the Media Gallery.
+
+---
+
+## Submission checklist (for Kaggle writeup)
+
+- [x] Title
+- [x] Subtitle
+- [ ] Card / Thumbnail Image (add to repo and select in Kaggle)
+- [x] Submission Track: Agents for Good
+- [ ] Media Gallery: add YouTube URL if available
+- [x] Project Description (this document, <1500 words)
+- [x] Attachments: GitHub repo, executed notebook, zip uploaded to release
+
+---
+
+## How to run locally (quick copy/paste)
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r capstone-project/requirements.txt
+python capstone-project/run_demo.py
+```
+
+Run tests:
+
+```bash
+pytest -q capstone-project/tests
+```
+
+---
+
+## Safety note
+
+Do not include API keys or secrets in the repository. When using an LLM, set credentials via environment variables and use the provided guarded adapter to enable/disable model calls.
+
+---
+
+If you want, I can also produce a short 2–3 minute video script and a thumbnail image now. Let me know which extras to add before you submit.
